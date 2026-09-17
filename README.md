@@ -1,41 +1,56 @@
-# Padrão Bridge — Veículos e Motores
+# Padrão Bridge - Contas Bancárias
 
-Implementação do padrão de projeto **Bridge**, separando a hierarquia de veículos da hierarquia de motores, permitindo combinar qualquer veículo com qualquer tipo de motor sem explosão de subclasses.
+Projeto de exemplo do padrão de projeto estrutural **Bridge**, aplicado a um sistema de contas bancárias com diferentes tipos de tarifa.
+
+## Ideia do padrão
+
+O Bridge separa duas coisas que mudam de forma independente:
+
+- **Abstração**: o tipo de conta (`Conta`)
+- **Implementação**: o tipo de tarifa (`TipoTarifa`)
+
+Em vez de criar uma classe para cada combinação (ex: `ContaCorrenteBasica`, `ContaCorrentePremium`, `ContaPoupancaBasica`...), cada `Conta` guarda uma referência a um `TipoTarifa`, e as duas hierarquias podem crescer sem se misturar.
 
 ## Estrutura
 
-**Hierarquia de veículos** (abstração)
-- `Veiculo` — classe abstrata, possui uma referência a `Motor`
-- `Carro` — herda de `Veiculo`
-- `Moto` — herda de `Veiculo`
-
-**Hierarquia de motores** (implementação)
-- `Motor` — interface, define o método `ligar()`
-- `MotorCombustao` — implementa `Motor`
-- `MotorEletrico` — implementa `Motor`
-
-## Como funciona
-
-`Veiculo` não depende de `MotorCombustao` nem de `MotorEletrico` diretamente — apenas da interface `Motor`. Isso permite montar, por exemplo, um `Carro` com `MotorEletrico` ou uma `Moto` com `MotorCombustao`, sem precisar criar uma subclasse para cada combinação.
-
 ```
-Veiculo (abstrata)          Motor (interface)
-├── Carro                   ├── MotorCombustao
-└── Moto                    └── MotorEletrico
+Conta (abstrata)
+ ├── ContaCorrente
+ ├── ContaPoupanca
+ └── ContaInvestimento
 
-Veiculo -- possui um --> Motor
+TipoTarifa (interface)
+ ├── TarifaBasica
+ ├── TarifaPremium
+ ├── TarifaEmpresarial
+ └── TarifaIsenta
 ```
 
-## Exemplo de uso
+- `Conta` guarda o `saldo` e uma referência a `TipoTarifa`.
+- Cada subclasse de `Conta` implementa `calcularSaldoComTarifa()` à sua maneira:
+  - `ContaCorrente` **desconta** a tarifa fixa (`valorTarifa()`) do saldo.
+  - `ContaPoupanca` e `ContaInvestimento` **somam** um rendimento percentual (`percentualRendimento()`) ao saldo.
+- Cada `TipoTarifa` define seu próprio valor de tarifa fixa e percentual de rendimento.
 
-```python
-carro = Carro(MotorEletrico())
-carro.acelerar()
+## Como usar
 
-moto = Moto(MotorCombustao())
-moto.acelerar()
+```java
+Conta conta = new ContaCorrente(1000.0f);
+conta.setTipoTarifa(new TarifaPremium());
+
+float saldoFinal = conta.calcularSaldoComTarifa(); // 975.0
 ```
 
-## Diagrama
+## Testes
 
-O diagrama de classes completo (UML) está disponível em `diagrama.png`.
+Os testes (JUnit 5) cobrem todas as combinações de conta x tarifa:
+
+- `ContaCorrenteTest`
+- `ContaPoupancaTest`
+- `ContaInvestimentoTest`
+
+Para rodar (com Maven, por exemplo):
+
+```bash
+mvn test
+```
